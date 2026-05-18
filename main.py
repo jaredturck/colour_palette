@@ -31,6 +31,12 @@ class ColourPaletteReport:
         image_metadata = self.build_image_metadata(filename, src_img, dst_img, palette, family_palette, final_palette)
         image_summary = self.build_image_summary(filename, src_img, family_palette, family_weights, final_palette)
 
+        with open('styles.css', 'r') as file:
+            stylesheet = file.read()
+
+        with open('script.js', 'r') as file:
+            javascript = file.read()
+
         family_items = []
 
         for index, hex_colour in enumerate(family_palette_hex):
@@ -63,6 +69,8 @@ class ColourPaletteReport:
         context = {
             'report_title': 'Image Palette Report',
             'report_subtitle': 'Generated with precision. Designed for creators.',
+            'stylesheet': stylesheet,
+            'javascript': javascript,
             'filename': filename,
             'image_src': self.img_to_base64(src_img),
             'candidate_palette': candidate_palette,
