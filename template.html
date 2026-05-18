@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ report_title }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <link rel="stylesheet" href="styles.css">
+    <script src="script.js" defer></script>
+</head>
+<body>
+    <main class="page">
+        <section class="hero">
+            <div class="hero_glow hero_glow_pink"></div>
+            <div class="hero_glow hero_glow_blue"></div>
+
+            <div class="hero_badge">
+                <span>◈</span>
+                <span>Image Report</span>
+            </div>
+
+            <h1>{{ report_title }}</h1>
+            <p>{{ report_subtitle }}</p>
+
+            <div class="file_badge">
+                <span>▣</span>
+                <span>{{ filename }}</span>
+            </div>
+        </section>
+
+        <section class="carousel_shell">
+            <div class="carousel_header">
+                <div>
+                    <p class="eyebrow">Palette analysis</p>
+                    <h2>Explore the image report</h2>
+                </div>
+
+                <p class="carousel_hint">
+                    {{ candidate_count }} candidate colours · 
+                    {{ source_size[0] }}×{{ source_size[1] }} source · 
+                    {{ downsampled_size[0] }}×{{ downsampled_size[1] }} working
+                </p>
+            </div>
+
+            <div class="carousel" data-carousel>
+                <button class="carousel_arrow carousel_arrow_left" data-carousel-prev aria-label="Previous card">‹</button>
+
+                <div class="carousel_track" data-carousel-track>
+                    <article class="report_card source_card">
+                        <div class="card_header">
+                            <p class="card_eyebrow">Card 1</p>
+                            <h3>Source Image</h3>
+                            <p>The original image before palette extraction or colour analysis.</p>
+                        </div>
+
+                        <div class="source_image_frame">
+                            <img src="{{ image_src }}" alt="{{ filename }}" class="source_image">
+                        </div>
+
+                        <div class="source_meta">
+                            <div>
+                                <span>File</span>
+                                <strong>{{ filename }}</strong>
+                            </div>
+
+                            <div>
+                                <span>Original size</span>
+                                <strong>{{ source_size[0] }}×{{ source_size[1] }}</strong>
+                            </div>
+
+                            <div>
+                                <span>Working size</span>
+                                <strong>{{ downsampled_size[0] }}×{{ downsampled_size[1] }}</strong>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="report_card spectrum_card">
+                        <div class="card_header spectrum_header">
+                            <div>
+                                <p class="card_eyebrow">Card 2</p>
+                                <h3>Image Colour Spectrum</h3>
+                                <p>The extracted candidate colours that make up the image, grouped visually by colour family.</p>
+                            </div>
+
+                            <div class="spectrum_badge">
+                                {{ candidate_count }} Colours
+                            </div>
+                        </div>
+
+                        <div class="spectrum_strip">
+                            {% for hex in candidate_palette %}
+                                <div
+                                    class="spectrum_strip_segment copy_colour"
+                                    data-copy-colour="{{ hex }}"
+                                    style="background: {{ hex }}"
+                                    title="Copy {{ hex }}"
+                                ></div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="spectrum_scroll_area">
+                            <div class="spectrum_grid">
+                                {% for hex in candidate_palette %}
+                                    <div class="spectrum_swatch copy_colour" data-copy-colour="{{ hex }}" title="Copy {{ hex }}">
+                                        <div class="spectrum_colour" style="background: {{ hex }}"></div>
+                                        <span>{{ hex }}</span>
+                                    </div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="family_summary">
+                                <div class="family_summary_header">
+                                    <span>Merged Colour Families</span>
+                                    <strong>{{ family_count }} Families</strong>
+                                </div>
+
+                                <div class="family_palette_row">
+                                    {% for item in family_items %}
+                                        <div class="family_swatch copy_colour" data-copy-colour="{{ item.hex }}" title="Copy {{ item.hex }}">
+                                            <div class="family_colour" style="background: {{ item.hex }}"></div>
+                                            <span>{{ item.hex }}</span>
+                                            <small>{{ item.weight }}% · {{ item.count }} swatches</small>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="spectrum_note">
+                            These colours are not the final recommendation yet. They are the broader colour ingredients detected before merging and ranking.
+                        </div>
+                    </article>
+
+                    <article class="report_card recommended_card">
+                        <div class="card_header recommended_header">
+                            <div>
+                                <p class="card_eyebrow">Card 3</p>
+                                <h3>Recommended Palette</h3>
+                                <p>The final colours selected after merging, ranking, and adaptive palette selection.</p>
+                            </div>
+
+                            <div class="recommended_badge">
+                                {{ recommended_count }} Core Colours
+                            </div>
+                        </div>
+
+                        <div class="recommended_stage">
+                            <div class="ranked_summary">
+                                <div class="ranked_summary_header">
+                                    <span>Ranked Colour Families</span>
+                                    <strong>Highest scoring first</strong>
+                                </div>
+
+                                <div class="ranked_palette_row">
+                                    {% for item in ranked_items %}
+                                        <div class="ranked_swatch copy_colour" data-copy-colour="{{ item.hex }}" title="Copy {{ item.hex }}">
+                                            <div class="ranked_colour" style="background: {{ item.hex }}"></div>
+                                            <span>{{ item.score }}</span>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <div class="recommended_palette_row">
+                                {% for colour in recommended_palette %}
+                                    <div class="recommended_colour_card copy_colour" data-copy-colour="{{ colour.hex }}" title="Copy {{ colour.hex }}">
+                                        <div class="recommended_colour" style="background: {{ colour.hex }}"></div>
+
+                                        <div class="recommended_colour_info">
+                                            <span>{{ colour.role }}</span>
+                                            <strong>{{ colour.hex }}</strong>
+                                            <small>{{ colour.weight }}% · score {{ colour.score }}</small>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="recommended_preview">
+                                {% for colour in recommended_palette %}
+                                    <div
+                                        class="copy_colour"
+                                        data-copy-colour="{{ colour.hex }}"
+                                        style="background: {{ colour.hex }}"
+                                        title="Copy {{ colour.hex }}"
+                                    ></div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="recommended_note">
+                            The top row shows ranked merged families. The larger cards show the final adaptive palette.
+                        </div>
+                    </article>
+
+                    <article class="report_card colour_map_card">
+                        <div class="card_header colour_map_header">
+                            <div>
+                                <p class="card_eyebrow">Card 4</p>
+                                <h3>Colour Space Map</h3>
+                                <p>Where the recommended palette sits across hue and lightness, with nearby shade alternatives.</p>
+                            </div>
+
+                            <div class="colour_map_badge">
+                                {{ colour_space_points|length }} Mapped Colours
+                            </div>
+                        </div>
+
+                        <div class="colour_map_stage">
+                            <div class="colour_map">
+                                {% for point in colour_space_points %}
+                                    <div
+                                        class="colour_map_marker copy_colour"
+                                        data-copy-colour="{{ point.hex }}"
+                                        style="
+                                            left: {{ point.x }}%;
+                                            top: {{ point.y }}%;
+                                            --marker-colour: {{ point.hex }};
+                                            --marker-size: {{ point.size }}px;
+                                        "
+                                        title="Copy {{ point.hex }}"
+                                    >
+                                        <span></span>
+                                    </div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="colour_map_legend">
+                                {% for point in colour_space_points %}
+                                    <div class="colour_map_item">
+                                        <div class="colour_map_item_label copy_colour" data-copy-colour="{{ point.hex }}" title="Copy {{ point.hex }}">
+                                            <span style="background: {{ point.hex }}"></span>
+                                            <div>
+                                                <strong>{{ point.role }}</strong>
+                                                <small>{{ point.hex }}</small>
+                                            </div>
+                                        </div>
+
+                                        <div class="colour_map_alternatives">
+                                            {% for alt in point.alternatives %}
+                                                <div
+                                                    class="copy_colour"
+                                                    data-copy-colour="{{ alt }}"
+                                                    style="background: {{ alt }}"
+                                                    title="Copy {{ alt }}"
+                                                ></div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="colour_map_note">
+                            The map uses hue horizontally and lightness vertically. The small rows show nearby lighter and darker alternatives for each selected colour.
+                        </div>
+                    </article>
+
+                    <article class="report_card details_card">
+                        <div class="card_header details_header">
+                            <div>
+                                <p class="card_eyebrow">Card 5</p>
+                                <h3>Technical Details & Image Summary</h3>
+                                <p>Image metadata and visual production details for reviewing, sharing, and identifying the source file.</p>
+                            </div>
+
+                            <div class="details_badge">
+                                Metadata
+                            </div>
+                        </div>
+
+                        <div class="details_stage">
+                            <div class="metadata_grid">
+                                {% for item in image_metadata %}
+                                    <div class="metadata_item">
+                                        <span>{{ item.label }}</span>
+                                        <strong>{{ item.value }}</strong>
+                                    </div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="image_summary_panel">
+                                <div class="image_summary_header">
+                                    <span>Image Summary</span>
+                                    <small>Designer-friendly overview</small>
+                                </div>
+
+                                <div class="image_summary_list">
+                                    {% for item in image_summary %}
+                                        <div class="image_summary_item">
+                                            <span>{{ item.label }}</span>
+                                            <strong>{{ item.value }}</strong>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+
+                                <div class="summary_palette">
+                                    <div class="summary_palette_header">
+                                        <span>Final palette</span>
+                                        <small>{{ recommended_count }} colours</small>
+                                    </div>
+
+                                    <div class="summary_palette_strip">
+                                        {% for colour in recommended_palette %}
+                                            <div
+                                                class="copy_colour"
+                                                data-copy-colour="{{ colour.hex }}"
+                                                style="background: {{ colour.hex }}"
+                                                title="Copy {{ colour.hex }}"
+                                            ></div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="details_note">
+                            This card focuses on image identity and production metadata rather than developer-specific export formats.
+                        </div>
+                    </article>
+                    
+                </div>
+
+                <button class="carousel_arrow carousel_arrow_right" data-carousel-next aria-label="Next card">›</button>
+            </div>
+
+            <div class="carousel_dots" data-carousel-dots></div>
+        </section>
+    </main>
+</body>
+</html>
